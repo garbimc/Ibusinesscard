@@ -30,9 +30,15 @@ def get_user_data(user_id):
 # Get query parameters to retrieve user_id
 user_id = st.query_params.get("user_id", [None])[0]
 
+# Set page config with custom app name and favicon
+st.set_page_config(
+    page_title="I-Business Card",
+    page_icon="💼",  # You can use an emoji here or replace with an image path below
+)
+
 
 if user_id:
-    st.markdown("<h1 class='centered-header'>I-Business Card</h1>", unsafe_allow_html=True)
+    
     
     # Display a loading spinner while fetching data
     with st.spinner("Loading business card..."):
