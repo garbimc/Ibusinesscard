@@ -1,4 +1,3 @@
+pandas 
+plotly
 streamlit
-pandas
-sqlite3
-Pillow
