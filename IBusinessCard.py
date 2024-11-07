@@ -22,8 +22,15 @@ def generate_shareable_link(user_id):
     base_url = st.secrets["base_url"] if "base_url" in st.secrets else "http://localhost:8501"
     return f"{base_url}/ViewBusinessCard?user_id={user_id}"
 
+# Set page config with custom app name and favicon
+st.set_page_config(
+    page_title="I-Business Card",
+    page_icon="💼",  # You can use an emoji here or replace with an image path below
+)
+
 # Streamlit App
 st.title(" I-Business Card ")
+
 
 # Login/Register
 if "authenticated" not in st.session_state:
