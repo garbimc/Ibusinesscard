@@ -2,6 +2,7 @@ import streamlit as st
 import sqlite3
 from PIL import Image
 from io import BytesIO
+import vobject
 
 # Function to connect to the database
 def connect_db():
@@ -27,19 +28,47 @@ def get_user_data(user_id):
     conn.close()
     return profile_data, contact_data, social_data
 
-# Get query parameters to retrieve user_id
-user_id = st.query_params.get("user_id", [None])[0]
+# Function to create vCard (.vcf) file content
+def create_vcard(first_name, last_name, role, company_name, email, cellphone, website, linkedin, youtube, twitter):
+    vcard = vobject.vCard()
+    vcard.add('fn').value = f"{first_name} {last_name}"
+    vcard.add('n').value = vobject.vcard.Name(family=last_name, given=first_name)
+    vcard.add('title').value = role
+    vcard.add('org').value = [company_name]
+    
+    if email:
+        vcard.add('email').value = email
+    if cellphone:
+        tel = vcard.add('tel')
+        tel.type_param = 'CELL'
+        tel.value = cellphone
+    if website:
+        vcard.add('url').value = website
+
+    # Add each social link as a separate note
+    if linkedin:
+        note_linkedin = vcard.add('note')
+        note_linkedin.value = f"LinkedIn: {linkedin}"
+    if youtube:
+        note_youtube = vcard.add('note')
+        note_youtube.value = f"YouTube: {youtube}"
+    if twitter:
+        note_twitter = vcard.add('note')
+        note_twitter.value = f"Twitter: {twitter}"
+
+    return vcard.serialize()
+
 
 # Set page config with custom app name and favicon
 st.set_page_config(
     page_title="I-Business Card",
-    page_icon="💼",  # You can use an emoji here or replace with an image path below
+    page_icon="💼",
 )
 
+# Get query parameters to retrieve user_id
+user_id = st.query_params.get("user_id", [None])[0]
 
 if user_id:
-    
-    
     # Display a loading spinner while fetching data
     with st.spinner("Loading business card..."):
         profile_data, contact_data, social_data = get_user_data(user_id)
@@ -47,9 +76,6 @@ if user_id:
     # Check if user data exists and process it
     if profile_data:
         first_name, last_name, role, company_name, bio, profile_photo, company_logo = profile_data
-
-        # Display all information within the bordered container
-        st.markdown("<div class='card-container'>", unsafe_allow_html=True)
 
         # Display Profile Photo and Company Logo
         col1, col2 = st.columns(2)
@@ -111,8 +137,14 @@ if user_id:
         else:
             st.write("No social links available.")
 
-        # Close the bordered container
-        st.markdown("</div>", unsafe_allow_html=True)
+        # Create the vCard file when the export button is clicked
+        vcard_content = create_vcard(first_name, last_name, role, company_name, email, cellphone, website, linkedin, youtube, twitter)
+        st.download_button(
+            label="Save and Export the Contact",
+            data=vcard_content,
+            file_name=first_name+"_"+last_name+"_ibusiness_card.vcf",
+            mime="text/vcard"
+        )
     else:
         st.error("No business card found for this user ID.")
 else:
